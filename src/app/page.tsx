@@ -5,33 +5,11 @@ import { Loader2, ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "../components/Logo";
-import { useState, useEffect, useRef } from "react";
-
-/* ── Intersection Observer hook for scroll animations ── */
-function useReveal() {
-    const ref = useRef<HTMLDivElement>(null);
-    const [visible, setVisible] = useState(false);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const obs = new IntersectionObserver(
-            ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
-            { threshold: 0.15 }
-        );
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, []);
-    return { ref, visible };
-}
+import { useState } from "react";
 
 export default function Home() {
     const { user, isLoaded } = useUser();
     const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-    const features = useReveal();
-    const specs = useReveal();
-    const faq = useReveal();
-    const cta = useReveal();
 
     if (!isLoaded) {
         return (
@@ -182,8 +160,8 @@ export default function Home() {
             </section>
 
             {/* ─── Features — Bento Grid ─── */}
-            <section id="features" className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]" ref={features.ref}>
-                <div className={`max-w-5xl mx-auto transition-all duration-1000 ${features.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <section id="features" className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]">
+                <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-20">
                         <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-[0.2em] mb-5">Features</p>
                         <h2 className="text-3xl sm:text-[2.75rem] font-medium tracking-[-0.035em] leading-tight">
@@ -235,8 +213,8 @@ export default function Home() {
             </section>
 
             {/* ─── Specs ─── */}
-            <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)] bg-[var(--bg-surface)]/30" ref={specs.ref}>
-                <div className={`max-w-5xl mx-auto transition-all duration-1000 delay-100 ${specs.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)] bg-[var(--bg-surface)]/30">
+                <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-20">
                         <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-[0.2em] mb-5">Architecture</p>
                         <h2 className="text-3xl sm:text-[2.75rem] font-medium tracking-[-0.035em] leading-tight">
@@ -267,8 +245,8 @@ export default function Home() {
             </section>
 
             {/* ─── FAQ ─── */}
-            <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]" ref={faq.ref}>
-                <div className={`max-w-2xl mx-auto transition-all duration-1000 ${faq.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]">
+                <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl sm:text-[2.75rem] font-medium tracking-[-0.035em]">
                             Questions<span className="text-[var(--text-muted)]">.</span>
@@ -301,8 +279,8 @@ export default function Home() {
 
             {/* ─── CTA ─── */}
             {!user && (
-                <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]" ref={cta.ref}>
-                    <div className={`max-w-3xl mx-auto text-center transition-all duration-1000 ${cta.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                <section className="py-28 sm:py-36 px-6 relative z-10 border-t border-[var(--border)]">
+                    <div className="max-w-3xl mx-auto text-center">
                         <h2 className="text-4xl sm:text-6xl font-medium tracking-[-0.04em] mb-6 leading-tight">
                             Start a conversation
                             <span className="text-[var(--text-muted)]">.</span>
