@@ -1,6 +1,32 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+export const syncUser = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return null;
+
+        const existing = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique();
+
+        if (!existing) {
+            await ctx.db.insert("users", {
+                clerkId: identity.subject,
+                email: identity.email ?? "",
+                name: identity.name ?? "Anonymous",
+                username: identity.nickname ?? identity.subject.split("_")[1] ?? "user",
+                imageUrl: identity.pictureUrl,
+                isOnline: true,
+                lastSeen: Date.now(),
+            });
+        }
+        return true;
+    },
+});
+
 export const upsertUser = internalMutation({
     args: {
         clerkId: v.string(),

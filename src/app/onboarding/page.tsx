@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -16,11 +16,10 @@ export default function Onboarding() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    if (!isLoaded) return null;
-
     const updateProfileMutation = useMutation(api.users.updateProfile);
 
-    // If user somehow tries to access this without being logged in
+    if (!isLoaded) return null;
+
     if (!user) {
         router.push("/");
         return null;
@@ -37,39 +36,31 @@ export default function Onboarding() {
         setError("");
 
         try {
-            // Update Clerk Name
             await user.update({
                 firstName: name.split(" ")[0],
                 lastName: name.split(" ").slice(1).join(" ") || undefined,
             });
 
-            // Updating username through Next.js client SDK is generally restricted if it's already generated or if missing the specific identifier.
             const safeUsername = username.toLowerCase().replace(/[^a-z0-9_]/g, "");
 
             try {
-                // Try to update through Clerk
                 if (user.update !== undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     await user.update({ username: safeUsername } as any);
                 }
             } catch (err) {
-                console.warn("Could not set Clerk username client-side due to config restrictions, bypassing directly to datastore");
+                console.warn("Could not set Clerk username client-side, bypassing to datastore", err);
             }
 
-            // Bypass to Convex Database directly
             try {
-                await updateProfileMutation({
-                    name: name,
-                    username: safeUsername
-                });
+                await updateProfileMutation({ name: name, username: safeUsername });
             } catch (convexErr) {
-                console.warn("Convex patch failed");
+                console.warn("Convex patch failed", convexErr);
             }
 
-            // Immediately redirect
-            setTimeout(() => {
-                router.push("/chat");
-            }, 300);
+            setTimeout(() => { router.push("/chat"); }, 300);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error(err);
             setError(err.errors?.[0]?.message || "Something went wrong.");
@@ -78,72 +69,75 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-8 shadow-2xl">
-                <div className="flex justify-center mb-6">
-                    <div className="w-16 h-16 bg-blue-600/20 text-blue-500 rounded-full flex items-center justify-center">
-                        <UserCircle size={32} />
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-md">
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                    <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center">
+                        <UserCircle size={28} className="text-white" />
                     </div>
                 </div>
 
-                <h1 className="text-2xl font-bold text-white text-center mb-2">Complete your profile</h1>
-                <p className="text-neutral-400 text-center text-sm mb-8">
-                    Welcome to Tars Live Chat! Let's set up your identity so others can find you.
-                </p>
+                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                    <h1 className="text-2xl font-bold text-gray-900 text-center mb-1">Set up your profile</h1>
+                    <p className="text-gray-500 text-center text-sm mb-8">
+                        Choose how others will see you on Tars Chat
+                    </p>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-300 mb-1.5">
-                            Display Name
-                        </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. John Doe"
-                            className="w-full bg-[#1a1a1a] border border-neutral-800 focus:border-blue-500 text-white rounded-xl px-4 py-3 outline-none transition-colors"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-300 mb-1.5">
-                            Username
-                        </label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-3 text-neutral-500">@</span>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                                Display Name
+                            </label>
                             <input
                                 type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="johndoe"
-                                className="w-full bg-[#1a1a1a] border border-neutral-800 focus:border-blue-500 text-white rounded-xl pl-8 pr-4 py-3 outline-none transition-colors"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g. John Doe"
+                                className="w-full bg-gray-50 border border-gray-200 focus:border-blue-500 text-gray-900 rounded-xl px-4 py-3 text-sm outline-none transition-colors placeholder-gray-400"
                                 required
                             />
                         </div>
-                        <p className="text-xs text-neutral-500 mt-2">Only letters, numbers, and underscores.</p>
-                    </div>
 
-                    {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm text-center">
-                            {error}
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                                Username
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="johndoe"
+                                    className="w-full bg-gray-50 border border-gray-200 focus:border-blue-500 text-gray-900 rounded-xl pl-8 pr-4 py-3 text-sm outline-none transition-colors placeholder-gray-400"
+                                    required
+                                />
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1.5">Letters, numbers, and underscores only.</p>
                         </div>
-                    )}
 
-                    <button
-                        type="submit"
-                        disabled={isLoading || !name.trim() || !username.trim()}
-                        className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-medium rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors mt-8"
-                    >
-                        {isLoading ? (
-                            <Loader2 className="animate-spin" size={20} />
-                        ) : (
-                            <>
-                                Let's Chat <ArrowRight size={18} />
-                            </>
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center">
+                                {error}
+                            </div>
                         )}
-                    </button>
-                </form>
+
+                        <button
+                            type="submit"
+                            disabled={isLoading || !name.trim() || !username.trim()}
+                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 transition-colors mt-2"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" size={18} />
+                            ) : (
+                                <>
+                                    Let&apos;s Chat <ArrowRight size={16} />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

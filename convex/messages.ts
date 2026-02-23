@@ -12,6 +12,11 @@ export const getMessages = query({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Unauthenticated");
 
+        const currentUser = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique();
+
         const messages = await ctx.db
             .query("messages")
             .withIndex("by_conversationId", (q) => q.eq("conversationId", conversationId))
@@ -19,7 +24,7 @@ export const getMessages = query({
 
         return messages.map((m) => ({
             ...m,
-            isMe: m.senderId === identity.subject, // we need sender's clerk ID or we map to user object
+            isMe: m.senderId === currentUser?._id,
         }));
     },
 });
