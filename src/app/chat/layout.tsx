@@ -5,6 +5,8 @@ import { MessageSquareText, Users, LogOut, Loader2, Settings } from "lucide-reac
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Logo } from "../../components/Logo";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,8 +14,8 @@ const NavItem = ({ icon: Icon, label, isActive, onClick }: { icon: any, label: s
     <button
         onClick={onClick}
         className={`w-full flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 rounded-xl transition-all duration-300 relative group ${isActive
-                ? 'bg-white/[0.06] text-[var(--text-primary)]'
-                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/[0.02]'
+            ? 'bg-white/[0.06] text-[var(--text-primary)]'
+            : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/[0.02]'
             }`}
     >
         {isActive && (
@@ -26,6 +28,7 @@ const NavItem = ({ icon: Icon, label, isActive, onClick }: { icon: any, label: s
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoaded } = useUser();
+    const currentUser = useQuery(api.users.getCurrentUser);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -74,8 +77,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                                 <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />
                             </div>
                             <div className="hidden lg:flex flex-col min-w-0 flex-1">
-                                <span className="text-sm text-[var(--text-primary)] truncate font-medium leading-tight">{user.firstName} {user.lastName}</span>
-                                <span className="text-[11px] text-[var(--text-muted)] truncate">@{user.username}</span>
+                                <span className="text-sm text-[var(--text-primary)] truncate font-medium leading-tight">{currentUser?.name || user.fullName}</span>
+                                <span className="text-[11px] text-[var(--text-muted)] truncate">@{currentUser?.username || user.username}</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-1 w-full justify-center lg:justify-start">

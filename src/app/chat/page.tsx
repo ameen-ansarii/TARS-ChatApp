@@ -113,8 +113,8 @@ export default function ChatApp() {
               <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />
             </div>
             <div>
-              <p className="text-sm font-medium leading-tight">{user.fullName || "User"}</p>
-              <p className="text-[11px] text-[var(--text-muted)] font-light">@{user.username || user.firstName?.toLowerCase() || "user"}</p>
+              <p className="text-sm font-medium leading-tight">{currentUser?.name || user.fullName || "User"}</p>
+              <p className="text-[11px] text-[var(--text-muted)] font-light">@{currentUser?.username || user.username || user.firstName?.toLowerCase() || "user"}</p>
             </div>
           </div>
           <Link href="/profile" className="w-8 h-8 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-all border border-[var(--border)]">
@@ -203,8 +203,8 @@ export default function ChatApp() {
                     key={conv._id}
                     onClick={() => handleUserSelect(conv.partner)}
                     className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg transition-all duration-200 mb-0.5 ${activeUser?._id === conv.partner?._id
-                        ? "bg-white/[0.06]"
-                        : "hover:bg-white/[0.025]"
+                      ? "bg-white/[0.06]"
+                      : "hover:bg-white/[0.025]"
                       }`}
                     style={{ animationDelay: `${i * 50}ms` }}
                   >
