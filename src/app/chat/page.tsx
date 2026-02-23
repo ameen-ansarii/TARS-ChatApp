@@ -349,12 +349,15 @@ function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => voi
             })}
 
             {isTyping && (
-              <div className="flex justify-start mb-4">
+              <div className="flex justify-start mb-4 items-center gap-2">
                 <div className="bg-[#1A1A1A] rounded-2xl rounded-bl-sm px-5 py-3 flex items-center gap-1.5 shadow-lg border border-white/10">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
+                <span className="text-xs text-gray-500 font-mono italic">
+                  {activeUser.name?.split(" ")[0]} is typing...
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} className="h-4" />
