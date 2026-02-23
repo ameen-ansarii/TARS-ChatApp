@@ -56,7 +56,7 @@ export default function Home() {
                                 </Link>
                             </>
                         ) : (
-                            <SignInButton mode="modal">
+                            <SignInButton mode="modal" forceRedirectUrl="/chat" signUpForceRedirectUrl="/chat">
                                 <button className="text-sm font-medium px-5 py-2 rounded-full border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-primary)] hover:bg-white/[0.04] transition-all duration-300">
                                     Sign in
                                 </button>
@@ -99,7 +99,7 @@ export default function Home() {
                             </Link>
                         ) : (
                             <>
-                                <SignInButton mode="modal">
+                                <SignInButton mode="modal" forceRedirectUrl="/chat" signUpForceRedirectUrl="/chat">
                                     <button className="group inline-flex items-center gap-2 px-7 py-3.5 bg-[var(--text-primary)] text-[var(--bg-root)] rounded-full text-sm font-semibold transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]">
                                         Get started — free
                                         <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -288,7 +288,7 @@ export default function Home() {
                         <p className="text-lg text-[var(--text-secondary)] mb-12 font-light max-w-md mx-auto">
                             Free, instant, and designed to stay out of your way.
                         </p>
-                        <SignInButton mode="modal">
+                        <SignInButton mode="modal" forceRedirectUrl="/chat" signUpForceRedirectUrl="/chat">
                             <button className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-root)] rounded-full text-sm font-semibold transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]">
                                 Create free account
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
