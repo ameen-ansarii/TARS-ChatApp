@@ -67,7 +67,7 @@ export default function ProfilePage() {
 
     if (!isLoaded || currentUser === undefined || !clerkUser) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#050505]">
+            <div className="flex h-[100dvh] items-center justify-center bg-[#050505]">
                 <div className="relative">
                     <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse" />
                     <Loader2 className="relative animate-spin text-blue-500" size={40} />
@@ -78,7 +78,7 @@ export default function ProfilePage() {
 
     if (currentUser === null) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#050505]">
+            <div className="flex h-[100dvh] items-center justify-center bg-[#050505]">
                 <div className="flex flex-col items-center gap-4 text-center">
                     <Loader2 className="animate-spin text-blue-500" size={32} />
                     <p className="text-gray-400 text-sm font-medium tracking-wide">Syncing your identity...</p>
@@ -88,7 +88,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-[#050505] text-white selection:bg-blue-500/30 relative overflow-hidden">
+        <div className="flex flex-col h-[100dvh] bg-[#050505] text-white selection:bg-blue-500/30 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />

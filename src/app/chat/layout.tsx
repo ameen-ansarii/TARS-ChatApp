@@ -36,7 +36,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
     if (!isLoaded || !user) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#050505]">
+            <div className="flex h-[100dvh] items-center justify-center bg-[#050505]">
                 <div className="relative">
                     <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse" />
                     <Loader2 className="relative animate-spin text-blue-500" size={40} />
@@ -46,7 +46,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     }
 
     return (
-        <div className="flex h-screen bg-[#050505] text-white font-sans overflow-hidden selection:bg-blue-500/30">
+        <div className="flex h-[100dvh] bg-[#050505] text-white font-sans overflow-hidden selection:bg-blue-500/30">
             {/* Dynamic Nav-sidebar */}
             <div className="hidden md:flex w-18 lg:w-64 shrink-0 flex-col items-center lg:items-stretch bg-[#0A0A0A]/80 backdrop-blur-3xl border-r border-white/5 z-50 relative">
 

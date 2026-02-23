@@ -58,7 +58,7 @@ export default function ChatApp() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-white px-4 relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#050505] text-white px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
         <div className="relative z-10 flex flex-col items-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(37,99,235,0.3)]">
@@ -77,7 +77,7 @@ export default function ChatApp() {
   }
 
   return (
-    <div className="flex h-screen bg-[#050505] text-white overflow-hidden selection:bg-blue-500/30">
+    <div className="flex h-full w-full bg-[#050505] text-white overflow-hidden selection:bg-blue-500/30">
 
       {/* Sidebar */}
       <div className={`w-full md:w-85 lg:w-95 shrink-0 flex flex-col bg-[#0A0A0A]/90 backdrop-blur-xl border-r border-white/5 relative z-10 ${activeUser ? "hidden md:flex" : "flex"}`}>

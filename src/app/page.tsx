@@ -10,7 +10,7 @@ export default function Home() {
 
     if (!isLoaded) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#050505]">
+            <div className="flex h-[100dvh] items-center justify-center bg-[#050505]">
                 <div className="relative">
                     <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse" />
                     <Loader2 className="relative animate-spin text-blue-500" size={40} />
@@ -20,7 +20,7 @@ export default function Home() {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-500/30 overflow-hidden relative">
+        <div className="min-h-[100dvh] bg-[#050505] text-white selection:bg-blue-500/30 overflow-hidden relative">
             {/* Animated Background blobs */}
             <div className="absolute top-0 -left-4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob" />
             <div className="absolute top-0 -right-4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000" />

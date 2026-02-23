@@ -60,7 +60,7 @@ export default function Onboarding() {
 
             setTimeout(() => { router.push("/chat"); }, 300);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error(err);
             setError(err.errors?.[0]?.message || "Something went wrong.");
@@ -69,7 +69,7 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
