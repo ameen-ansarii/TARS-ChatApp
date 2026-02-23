@@ -27,7 +27,6 @@ export default function ContactsPage() {
         setIsStartingChat(userId);
         try {
             await ensureConversation({ userId });
-            // Redirect to the main chat page, since we don't handle routing per-chat ID yet
             router.push("/chat");
         } catch (e) {
             console.error(e);
@@ -36,88 +35,95 @@ export default function ContactsPage() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#050505] text-white relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-
+        <div className="flex flex-col h-full bg-[var(--bg-root)] text-[var(--text-primary)] relative overflow-hidden">
             {/* Header */}
-            <div className="h-20 flex items-center px-6 lg:px-8 border-b border-white/5 bg-[#050505]/50 backdrop-blur-2xl shrink-0 z-10 relative">
+            <div className="h-16 flex items-center px-6 lg:px-8 border-b border-[var(--border)] shrink-0 z-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.1)]">
-                        <Users className="text-blue-400" size={20} />
-                    </div>
+                    <Users className="text-[var(--text-muted)]" size={18} />
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight text-white mb-0.5 mt-2">Network Directory</h1>
-                        <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-2">Explore & Connect</p>
+                        <h1 className="text-base font-medium tracking-tight">Contacts</h1>
+                        <p className="text-[10px] text-[var(--text-muted)] font-light">
+                            {filteredUsers ? `${filteredUsers.length} people` : 'Loading...'}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div className="p-6 lg:p-8 pb-4 relative z-10">
-                {/* Search */}
-                <div className="relative max-w-xl group">
-                    <div className="absolute inset-0 bg-blue-500/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <Search className="absolute left-4 top-3.5 text-gray-500 z-10" size={20} />
+            {/* Search */}
+            <div className="px-5 lg:px-8 py-4 pb-2">
+                <div className="relative max-w-lg group">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors" size={15} />
                     <input
                         type="text"
-                        placeholder="Search by name or @username..."
+                        placeholder="Search people..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/5 text-base text-white rounded-2xl pl-12 pr-4 py-3.5 outline-none border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-gray-500 shadow-sm relative z-10"
+                        className="input-clean !pl-10 !py-2.5 !text-[13px] !font-light"
                     />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 lg:px-8 pb-8 relative z-10 scrollbar-hide">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl">
+            {/* Contact Grid */}
+            <div className="flex-1 overflow-y-auto px-5 lg:px-8 pb-8 pt-2 scrollbar-hide">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-w-5xl">
                     {filteredUsers === undefined ? (
-                        <div className="col-span-full flex justify-center p-12">
-                            <Loader2 className="animate-spin text-blue-500" size={32} />
+                        <div className="col-span-full flex justify-center p-16">
+                            <Loader2 className="animate-spin text-[var(--accent)]" size={24} />
                         </div>
                     ) : filteredUsers.length === 0 ? (
-                        <div className="col-span-full text-center p-16 border border-dashed border-white/10 rounded-[2rem] bg-white/5 backdrop-blur-sm">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 border border-white/10">
-                                <Search size={32} strokeWidth={1.5} />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2 tracking-tight">No contacts found</h3>
-                            <p className="text-gray-400 max-w-sm mx-auto text-sm">
-                                {searchQuery ? `No matching query for "${searchQuery}"` : "The network is quiet. No users discovered yet."}
+                        <div className="col-span-full text-center p-16 anim-fade-up">
+                            <p className="text-sm font-medium mb-1">No contacts found</p>
+                            <p className="text-[var(--text-muted)] text-xs font-light">
+                                {searchQuery ? `No matches for "${searchQuery}"` : "No users discovered yet."}
                             </p>
                         </div>
                     ) : (
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        filteredUsers.map((u: any) => (
-                            <div key={u._id} className="glass-panel border-white/5 rounded-2xl p-4 flex items-center gap-4 hover:border-white/10 hover:bg-white-[0.04] hover:shadow-lg transition-all group cursor-pointer">
+                        filteredUsers.map((u: any, i: number) => (
+                            <div
+                                key={u._id}
+                                className="glass rounded-xl p-3.5 flex items-center gap-3 card-hover group cursor-pointer relative overflow-hidden"
+                                onClick={() => handleStartChat(u._id)}
+                                style={{ animationDelay: `${i * 60}ms` }}
+                            >
+                                {/* Avatar */}
                                 <div className="relative shrink-0">
                                     {u.imageUrl ? (
-                                        <Image src={u.imageUrl} width={56} height={56} className="w-14 h-14 rounded-full border border-white/10 shadow-sm group-hover:border-blue-500/30 transition-colors object-cover" alt="avatar" />
+                                        <Image src={u.imageUrl} width={44} height={44} className="w-11 h-11 rounded-full border border-[var(--border)] object-cover group-hover:border-[var(--border-hover)] transition-colors" alt="avatar" />
                                     ) : (
-                                        <div className="w-14 h-14 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold border border-white/10 group-hover:border-blue-500/30 transition-colors">
+                                        <div className="w-11 h-11 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center text-lg font-medium">
                                             {u.name?.[0] || "?"}
                                         </div>
                                     )}
-                                    {u.isOnline && (
-                                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[2px] border-[#0A0A0A] shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                    )}
+                                    {u.isOnline && <div className="absolute -bottom-0.5 -right-0.5 online-dot" />}
                                 </div>
 
+                                {/* Info */}
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-white font-semibold truncate text-[15px] group-hover:text-blue-400 transition-colors">{u.name}</h3>
-                                    {u.username && <p className="text-blue-400/80 font-mono text-xs truncate mb-1">@{u.username}</p>}
-                                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mt-1">
-                                        {u.isOnline ? <span className="text-emerald-500 tracking-wide">Secure Comm Link Active</span> : "Offline"}
+                                    <h3 className="text-[14px] font-medium truncate group-hover:text-[var(--accent)] transition-colors">{u.name}</h3>
+                                    {u.username && <p className="text-[11px] text-[var(--text-muted)] truncate font-light">@{u.username}</p>}
+                                    <p className="text-[10px] mt-0.5 font-light">
+                                        {u.isOnline ? (
+                                            <span className="text-[var(--success)] flex items-center gap-1">
+                                                <span className="w-1 h-1 rounded-full bg-[var(--success)]" />
+                                                Online
+                                            </span>
+                                        ) : (
+                                            <span className="text-[var(--text-muted)]">Offline</span>
+                                        )}
                                     </p>
                                 </div>
 
+                                {/* Chat Button */}
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleStartChat(u._id); }}
                                     disabled={isStartingChat === u._id}
-                                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-blue-600 text-blue-400 hover:text-white border border-white/10 hover:border-blue-500 flex items-center justify-center transition-all shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_20px_rgba(37,99,235,0.2)]"
+                                    className="w-9 h-9 rounded-lg bg-white/[0.03] hover:bg-[var(--accent)] text-[var(--text-muted)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] flex items-center justify-center transition-all duration-300 shrink-0 active:scale-90 disabled:opacity-50 z-10"
                                 >
                                     {isStartingChat === u._id ? (
-                                        <Loader2 size={18} className="animate-spin" />
+                                        <Loader2 size={14} className="animate-spin" />
                                     ) : (
-                                        <MessageCirclePlus size={18} />
+                                        <MessageCirclePlus size={14} />
                                     )}
                                 </button>
                             </div>
@@ -126,7 +132,6 @@ export default function ContactsPage() {
                 </div>
             </div>
 
-            {/* Mobile Nav */}
             <MobileNav />
         </div>
     );

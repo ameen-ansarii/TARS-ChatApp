@@ -3,26 +3,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, MessageCircle, User, Search } from "lucide-react";
 
+const items = [
+    { href: "/", icon: Home, label: "Home" },
+    { href: "/chat", icon: MessageCircle, label: "Chat" },
+    { href: "/chat/contacts", icon: Search, label: "Search" },
+    { href: "/profile", icon: User, label: "Profile" },
+];
+
 export default function MobileNav() {
     const pathname = usePathname();
     return (
-        <div className="border-t border-white/5 bg-[#050505] px-4 py-3 flex items-center justify-around md:hidden relative z-50 shrink-0">
-            <Link href="/" className={`flex flex-col items-center gap-1.5 ${pathname === '/' ? 'text-blue-400' : 'text-gray-500 hover:text-white'} transition-colors`}>
-                <Home size={20} />
-                <span className="text-[10px] font-medium tracking-wide">Home</span>
-            </Link>
-            <Link href="/chat" className={`flex flex-col items-center gap-1.5 ${pathname === '/chat' ? 'text-blue-400' : 'text-gray-500 hover:text-white'} transition-colors`}>
-                <MessageCircle size={20} />
-                <span className="text-[10px] font-medium tracking-wide">Chat</span>
-            </Link>
-            <Link href="/chat/contacts" className={`flex flex-col items-center gap-1.5 ${pathname === '/chat/contacts' ? 'text-blue-400' : 'text-gray-500 hover:text-white'} transition-colors`}>
-                <Search size={20} />
-                <span className="text-[10px] font-medium tracking-wide">Search</span>
-            </Link>
-            <Link href="/profile" className={`flex flex-col items-center gap-1.5 ${pathname === '/profile' ? 'text-blue-400' : 'text-gray-500 hover:text-white'} transition-colors`}>
-                <User size={20} />
-                <span className="text-[10px] font-medium tracking-wide">Profile</span>
-            </Link>
+        <div className="border-t border-[var(--border)] bg-[var(--bg-surface)]/80 backdrop-blur-2xl px-2 py-1.5 flex items-center justify-around md:hidden relative z-50 shrink-0">
+            {items.map(({ href, icon: Icon, label }) => {
+                const active = pathname === href;
+                return (
+                    <Link
+                        key={href}
+                        href={href}
+                        className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg transition-all duration-200 relative ${active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)] active:scale-95'
+                            }`}
+                    >
+                        <Icon size={18} strokeWidth={active ? 2 : 1.5} />
+                        <span className="text-[9px] font-medium tracking-wide">{label}</span>
+                        {active && (
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[var(--accent)] rounded-full" />
+                        )}
+                    </Link>
+                );
+            })}
         </div>
     );
 }

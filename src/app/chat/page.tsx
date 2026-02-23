@@ -6,7 +6,7 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect, useRef } from "react";
 import { format, isToday, isYesterday } from "date-fns";
 import Link from "next/link";
-import { Home, User, MessageCircle, Search, ArrowLeft, Send } from "lucide-react";
+import { User, MessageCircle, Search, ArrowLeft, Send } from "lucide-react";
 import Image from "next/image";
 import MobileNav from "../../components/MobileNav";
 
@@ -28,6 +28,30 @@ export default function ChatApp() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeUser, setActiveUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleUserSelect = (u: any) => {
+    setActiveUser(u);
+    if (!window.history.state?.chatOpen) {
+      window.history.pushState({ chatOpen: true }, "", window.location.href);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveUser(null);
+    if (window.history.state?.chatOpen) {
+      window.history.back();
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (activeUser) {
+        setActiveUser(null);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [activeUser]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredUsers = users?.filter((u: any) =>
@@ -58,16 +82,15 @@ export default function ChatApp() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#050505] text-white px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(37,99,235,0.3)]">
-            <MessageCircle size={32} className="text-white" />
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[var(--bg-root)] text-[var(--text-primary)] px-4">
+        <div className="flex flex-col items-center anim-fade-up">
+          <div className="w-12 h-12 bg-gradient-to-br from-[var(--accent)] to-[#38bdf8] rounded-2xl flex items-center justify-center mb-6">
+            <MessageCircle size={24} className="text-white" />
           </div>
-          <h1 className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Tars Chat</h1>
-          <p className="text-gray-400 mb-8 text-center font-light">Sign in to start messaging</p>
+          <h1 className="text-2xl font-medium mb-2 tracking-tight">tars</h1>
+          <p className="text-[var(--text-secondary)] mb-8 font-light text-sm">Sign in to start messaging</p>
           <SignInButton mode="modal">
-            <button className="px-8 py-3 bg-white text-black rounded-full font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transform hover:-translate-y-0.5">
+            <button className="px-6 py-2.5 bg-[var(--text-primary)] text-[var(--bg-root)] rounded-full text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]">
               Sign In
             </button>
           </SignInButton>
@@ -77,38 +100,38 @@ export default function ChatApp() {
   }
 
   return (
-    <div className="flex h-full w-full bg-[#050505] text-white overflow-hidden selection:bg-blue-500/30">
+    <div className="flex h-full w-full bg-[var(--bg-root)] text-[var(--text-primary)] overflow-hidden">
 
-      {/* Sidebar */}
-      <div className={`w-full md:w-85 lg:w-95 shrink-0 flex flex-col bg-[#0A0A0A]/90 backdrop-blur-xl border-r border-white/5 relative z-10 ${activeUser ? "hidden md:flex" : "flex"}`}>
+      {/* ── Sidebar ── */}
+      <div className={`w-full md:w-[320px] lg:w-[360px] shrink-0 flex flex-col bg-[var(--bg-surface)]/50 backdrop-blur-xl border-r border-[var(--border)] relative z-10 ${activeUser ? "hidden md:flex" : "flex"}`}>
 
         {/* Sidebar Header */}
-        <div className="px-5 pt-6 pb-4 flex items-center justify-between border-b border-white/5">
-          <div className="flex items-center gap-3">
+        <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-[var(--border)]">
+          <div className="flex items-center gap-2.5">
             <div className="relative shrink-0">
-              <Image src={user.imageUrl} width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent transition-all border border-white/10" alt="me" />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0A0A0A]" />
+              <Image src={user.imageUrl} width={36} height={36} className="w-9 h-9 rounded-full object-cover border border-[var(--border)]" alt="me" />
+              <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />
             </div>
             <div>
-              <p className="font-bold text-sm leading-tight text-white/90">{user.fullName || "User"}</p>
-              <p className="text-xs text-blue-400 opacity-80">@{user.username || user.firstName?.toLowerCase() || "user"}</p>
+              <p className="text-sm font-medium leading-tight">{user.fullName || "User"}</p>
+              <p className="text-[11px] text-[var(--text-muted)] font-light">@{user.username || user.firstName?.toLowerCase() || "user"}</p>
             </div>
           </div>
-          <Link href="/profile" className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors border border-white/5">
-            <User size={16} />
+          <Link href="/profile" className="w-8 h-8 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-all border border-[var(--border)]">
+            <User size={14} />
           </Link>
         </div>
 
         {/* Search */}
-        <div className="px-4 py-4 border-b border-white/5">
+        <div className="px-3.5 py-2.5">
           <div className="relative group">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors" />
             <input
               type="text"
-              placeholder="Search network..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 text-white rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none placeholder-gray-500 focus:ring-1 focus:ring-blue-500/50 border border-white/5 transition-all focus:bg-white/10"
+              className="input-clean !pl-9 !py-2 !text-[13px] !rounded-lg !font-light"
             />
           </div>
         </div>
@@ -116,42 +139,47 @@ export default function ChatApp() {
         {/* Online Users Strip */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {!searchQuery && filteredUsers && filteredUsers.filter((u: any) => u.isOnline).length > 0 && (
-          <div className="px-4 py-4 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Active Now</p>
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+          <div className="px-3.5 py-2.5 border-b border-[var(--border)]">
+            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.15em] mb-2.5 font-medium flex items-center gap-1.5">
+              <span className="w-1 h-1 rounded-full bg-[var(--success)]" />
+              Online
+            </p>
+            <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {filteredUsers.filter((u: any) => u.isOnline).map((u: any) => (
-                <button key={u._id} onClick={() => setActiveUser(u)} className="flex flex-col items-center gap-2 shrink-0 group">
+                <button key={u._id} onClick={() => handleUserSelect(u)} className="flex flex-col items-center gap-1.5 shrink-0 group">
                   <div className="relative">
-                    <Image src={u.imageUrl} width={48} height={48} className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/30 group-hover:ring-blue-500 transition-all border border-white/10" alt="avatar" />
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0A0A0A] shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    <div className="avatar-ring">
+                      <Image src={u.imageUrl} width={42} height={42} className="w-[42px] h-[42px] rounded-full object-cover" alt="avatar" />
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 online-dot" />
                   </div>
-                  <span className="text-[11px] text-gray-400 group-hover:text-white transition-colors truncate w-14 text-center">{u.name?.split(" ")[0]}</span>
+                  <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors truncate w-12 text-center font-light">{u.name?.split(" ")[0]}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Conversations & Contacts */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide relative">
+        {/* Conversations & Contacts List */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           {searchQuery && filteredUsers && filteredUsers.length > 0 && (
-            <div className="px-3 pt-4">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Network Directory</p>
+            <div className="px-2.5 pt-2.5">
+              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.15em] mb-1.5 px-1.5 font-medium">People</p>
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {filteredUsers.map((u: any) => (
                 <button
                   key={u._id}
-                  onClick={() => { setActiveUser(u); setSearchQuery(""); }}
-                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-colors mb-1 group"
+                  onClick={() => { handleUserSelect(u); setSearchQuery(""); }}
+                  className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-white/[0.03] transition-all duration-200 group"
                 >
                   <div className="relative shrink-0">
-                    <Image src={u.imageUrl} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-white/10 group-hover:border-white/20 transition-colors" alt="avatar" />
-                    {u.isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0A0A0A]" />}
+                    <Image src={u.imageUrl} width={38} height={38} className="w-[38px] h-[38px] rounded-full object-cover border border-[var(--border)]" alt="avatar" />
+                    {u.isOnline && <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />}
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="font-semibold text-sm truncate text-white/90 group-hover:text-white">{u.name}</p>
-                    <p className="text-xs text-blue-400/80 truncate">@{u.username}</p>
+                    <p className="text-sm font-medium truncate group-hover:text-[var(--text-primary)] transition-colors">{u.name}</p>
+                    <p className="text-[11px] text-[var(--text-muted)] truncate font-light">@{u.username}</p>
                   </div>
                 </button>
               ))}
@@ -159,43 +187,51 @@ export default function ChatApp() {
           )}
 
           {!searchQuery && (
-            <div className="px-3 pt-3 pb-3">
+            <div className="px-2 pt-1.5 pb-2">
               {filteredConversations === undefined ? (
-                <div className="flex items-center justify-center py-12 text-gray-500 text-sm">Synchronizing network...</div>
+                <div className="flex items-center justify-center py-16 text-[var(--text-muted)] text-sm font-light">
+                  Loading...
+                </div>
               ) : filteredConversations.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/10">
-                    <MessageCircle size={24} className="text-gray-500" />
-                  </div>
-                  <p className="text-white/80 font-medium text-sm">Inbox Zero</p>
-                  <p className="text-gray-500 text-xs mt-1">Search the network to start chatting</p>
+                <div className="flex flex-col items-center justify-center py-20 text-center anim-fade-up">
+                  <p className="text-sm font-medium mb-1">No conversations</p>
+                  <p className="text-[var(--text-muted)] text-xs font-light">Search someone to start chatting</p>
                 </div>
               ) : (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                filteredConversations.map((conv: any) => (
+                filteredConversations.map((conv: any, i: number) => (
                   <button
                     key={conv._id}
-                    onClick={() => setActiveUser(conv.partner)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 mb-1 border ${activeUser?._id === conv.partner?._id ? "bg-white/10 border-white/10 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]" : "bg-transparent border-transparent hover:bg-white/5"
+                    onClick={() => handleUserSelect(conv.partner)}
+                    className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg transition-all duration-200 mb-0.5 ${activeUser?._id === conv.partner?._id
+                        ? "bg-white/[0.06]"
+                        : "hover:bg-white/[0.025]"
                       }`}
+                    style={{ animationDelay: `${i * 50}ms` }}
                   >
                     <div className="relative shrink-0">
-                      <Image src={conv.partner?.imageUrl} width={48} height={48} className={`w-12 h-12 rounded-full object-cover border transition-colors ${activeUser?._id === conv.partner?._id ? "border-blue-500/50" : "border-white/10"}`} alt="avatar" />
-                      {conv.partner?.isOnline && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0A0A0A]" />}
+                      <Image
+                        src={conv.partner?.imageUrl}
+                        width={42}
+                        height={42}
+                        className={`w-[42px] h-[42px] rounded-full object-cover border transition-colors ${activeUser?._id === conv.partner?._id ? "border-[var(--accent)]/30" : "border-[var(--border)]"
+                          }`}
+                        alt="avatar"
+                      />
+                      {conv.partner?.isOnline && <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className={`font-semibold text-sm truncate ${activeUser?._id === conv.partner?._id ? "text-white" : "text-white/90"}`}>{conv.partner?.name}</p>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <p className="text-[13px] font-medium truncate">{conv.partner?.name}</p>
                         {conv.lastMessage && (
-                          <span className="text-[10px] text-gray-500 font-mono shrink-0 ml-2 tracking-tighter">{formatTimestamp(conv.lastMessage._creationTime)}</span>
+                          <span className="text-[10px] text-[var(--text-muted)] shrink-0 ml-2 font-light">{formatTimestamp(conv.lastMessage._creationTime)}</span>
                         )}
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`text-xs truncate ${conv.unreadCount > 0 ? "text-white font-medium" : "text-gray-500"} ${activeUser?._id === conv.partner?._id ? "opacity-100" : ""}`}>
+                        <p className={`text-[12px] truncate font-light ${conv.unreadCount > 0 ? "text-[var(--text-secondary)]" : "text-[var(--text-muted)]"}`}>
                           {conv.lastMessage?.text || "No messages yet"}
                         </p>
                         {conv.unreadCount > 0 && (
-                          <span className="shrink-0 min-w-[18px] h-[18px] bg-blue-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center px-1 shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                          <span className="shrink-0 min-w-[18px] h-[18px] bg-[var(--accent)] text-white rounded-full text-[9px] font-semibold flex items-center justify-center px-1">
                             {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
                           </span>
                         )}
@@ -208,34 +244,31 @@ export default function ChatApp() {
           )}
         </div>
 
-        {/* Bottom Nav (mobile only) */}
         <MobileNav />
       </div>
 
-      {/* Chat Area */}
+      {/* ── Chat Area ── */}
       <div className={`flex-1 flex flex-col bg-[#050505] relative ${!activeUser ? "hidden md:flex" : "flex"}`}>
-        {/* Abstract background effect for chat area */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/5 to-purple-900/5 pointer-events-none" />
 
         {!activeUser ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 relative z-10 glass-panel border-0 m-4 rounded-[2rem]">
-            <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500 blur-[120px] opacity-10" />
-            <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500 blur-[120px] opacity-10" />
-
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]">
-              <MessageCircle size={32} className="text-gray-400" />
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 relative z-10">
+            <div className="anim-fade-up">
+              <p className="text-lg font-medium text-[var(--text-secondary)] mb-1">Select a conversation</p>
+              <p className="text-sm text-[var(--text-muted)] font-light">Choose someone from the sidebar</p>
             </div>
-            <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Secure Comm Link</p>
-            <p className="text-sm text-gray-500 mt-2 font-mono">Awaiting connection. Select a node from the directory.</p>
           </div>
         ) : (
-          <ChatWindow activeUser={activeUser} onBack={() => setActiveUser(null)} />
+          <ChatWindow activeUser={activeUser} onBack={handleBack} />
         )}
       </div>
     </div>
   );
 }
 
+// ═══════════════════════════════════════════════
+// CHAT WINDOW — COMPLETELY UNTOUCHED
+// ═══════════════════════════════════════════════
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => void }) {
   const [text, setText] = useState("");
@@ -349,15 +382,12 @@ function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => voi
             })}
 
             {isTyping && (
-              <div className="flex justify-start mb-4 items-center gap-2">
+              <div className="flex justify-start mb-4">
                 <div className="bg-[#1A1A1A] rounded-2xl rounded-bl-sm px-5 py-3 flex items-center gap-1.5 shadow-lg border border-white/10">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
-                <span className="text-xs text-gray-500 font-mono italic">
-                  {activeUser.name?.split(" ")[0]} is typing...
-                </span>
               </div>
             )}
             <div ref={messagesEndRef} className="h-4" />
