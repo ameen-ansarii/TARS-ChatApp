@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Loader2, ArrowLeft, Mail, Clock, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { Loader2, ArrowLeft, Mail, Clock, MessageCircle, Send } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import MobileNav from "../../../components/MobileNav";
@@ -12,8 +13,40 @@ export default function UserProfilePage() {
     const router = useRouter();
     const params = useParams();
     const userId = params.id as string;
+    const [isStartingChat, setIsStartingChat] = useState(false);
 
     const user = useQuery(api.users.getUserById, userId ? { userId: userId as any } : "skip");
+    const currentUser = useQuery(api.users.getCurrentUser);
+    const ensureConversation = useMutation(api.conversations.getOrCreateConversation);
+
+    const isOwnProfile = currentUser?._id === userId;
+
+    const handleMessage = async () => {
+        if (!userId || isOwnProfile) return;
+        setIsStartingChat(true);
+        try {
+            await ensureConversation({ userId: userId as any });
+            // Save the user data to sessionStorage so chat page restores this conversation
+            if (user) {
+                sessionStorage.setItem("tars_active_chat", JSON.stringify({
+                    type: "user",
+                    data: {
+                        _id: user._id,
+                        name: user.name,
+                        username: user.username,
+                        imageUrl: user.imageUrl,
+                        isOnline: user.isOnline,
+                        lastSeen: user.lastSeen,
+                        email: user.email,
+                    }
+                }));
+            }
+            router.push("/chat");
+        } catch (e) {
+            console.error(e);
+            setIsStartingChat(false);
+        }
+    };
 
     if (user === undefined) {
         return (
@@ -46,7 +79,21 @@ export default function UserProfilePage() {
                         >
                             <ArrowLeft size={16} />
                         </button>
-                        <h1 className="text-sm font-medium">Profile</h1>
+                        <h1 className="text-sm font-medium flex-1">Profile</h1>
+                        {!isOwnProfile && (
+                            <button
+                                onClick={handleMessage}
+                                disabled={isStartingChat}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[12px] font-semibold hover:brightness-110 transition-all shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50 border border-blue-500/30"
+                            >
+                                {isStartingChat ? (
+                                    <Loader2 size={13} className="animate-spin" />
+                                ) : (
+                                    <Send size={13} />
+                                )}
+                                Message
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -85,6 +132,22 @@ export default function UserProfilePage() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Message CTA Button */}
+                                {!isOwnProfile && (
+                                    <button
+                                        onClick={handleMessage}
+                                        disabled={isStartingChat}
+                                        className="mt-5 flex items-center justify-center gap-2 w-full md:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-blue-600/25 active:scale-[0.98] disabled:opacity-50 border border-blue-500/30"
+                                    >
+                                        {isStartingChat ? (
+                                            <Loader2 size={15} className="animate-spin" />
+                                        ) : (
+                                            <MessageCircle size={15} />
+                                        )}
+                                        {isStartingChat ? "Opening chat..." : "Send Message"}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -113,9 +176,13 @@ export default function UserProfilePage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.12em] font-medium">Chat</p>
-                                    <button onClick={() => router.back()} className="text-sm font-light text-[var(--accent)] hover:underline">
-                                        Back to conversation
-                                    </button>
+                                    {isOwnProfile ? (
+                                        <p className="text-sm font-light text-[var(--text-muted)]">This is your profile</p>
+                                    ) : (
+                                        <button onClick={handleMessage} disabled={isStartingChat} className="text-sm font-light text-[var(--accent)] hover:underline">
+                                            {isStartingChat ? "Opening..." : "Start a conversation"}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

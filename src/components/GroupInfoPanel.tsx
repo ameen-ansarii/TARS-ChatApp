@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { X, UserMinus, UserPlus, Search, Crown, ArrowLeft } from "lucide-react";
+import { X, UserMinus, UserPlus, Search, Crown, ArrowLeft, LogOut, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function GroupInfoPanel({ conversationId, onClose }: { conversationId: string; onClose: () => void }) {
+export default function GroupInfoPanel({ conversationId, onClose, onLeft }: { conversationId: string; onClose: () => void; onLeft?: () => void }) {
     const [showAddMember, setShowAddMember] = useState(false);
     const [addSearch, setAddSearch] = useState("");
     const [isVisible, setIsVisible] = useState(false);
@@ -18,6 +18,8 @@ export default function GroupInfoPanel({ conversationId, onClose }: { conversati
     const allUsers = useQuery(api.users.listUsers);
     const removeMember = useMutation(api.conversations.removeMember);
     const addMember = useMutation(api.conversations.addMember);
+    const leaveGroup = useMutation(api.conversations.leaveGroup);
+    const deleteGroup = useMutation(api.conversations.deleteGroup);
 
     // Animate in on mount
     useEffect(() => {
@@ -168,6 +170,31 @@ export default function GroupInfoPanel({ conversationId, onClose }: { conversati
                                 );
                             })}
                         </div>
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div className="mx-5 border-t border-white/5" />
+                    <div className="px-5 py-5 flex flex-col gap-2">
+                        <button onClick={async () => {
+                            if (!confirm("Leave this group?")) return;
+                            await leaveGroup({ conversationId: conversationId as any });
+                            onClose();
+                            onLeft?.();
+                        }}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 text-red-400 text-sm font-semibold transition-all">
+                            <LogOut size={15} /> Leave Group
+                        </button>
+                        {isAdmin && (
+                            <button onClick={async () => {
+                                if (!confirm("Delete this group permanently? All messages will be lost.")) return;
+                                await deleteGroup({ conversationId: conversationId as any });
+                                onClose();
+                                onLeft?.();
+                            }}
+                                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/25 text-red-500 text-sm font-semibold transition-all">
+                                <Trash2 size={15} /> Delete Group
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

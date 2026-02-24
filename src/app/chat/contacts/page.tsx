@@ -3,11 +3,12 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useState } from "react";
-import { Search, Loader2, MessageCirclePlus, Users } from "lucide-react";
+import { Search, Loader2, MessageCirclePlus, Users, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Id } from "../../../../convex/_generated/dataModel";
 import Image from "next/image";
 import MobileNav from "../../../components/MobileNav";
+import CreateGroupModal from "../../../components/CreateGroupModal";
 
 export default function ContactsPage() {
     const users = useQuery(api.users.listUsers);
@@ -16,6 +17,7 @@ export default function ContactsPage() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [isStartingChat, setIsStartingChat] = useState<string | null>(null);
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filteredUsers = users?.filter((u: any) =>
@@ -37,7 +39,7 @@ export default function ContactsPage() {
     return (
         <div className="flex flex-col h-full bg-[var(--bg-root)] text-[var(--text-primary)] relative overflow-hidden">
             {/* Header */}
-            <div className="h-16 flex items-center px-6 lg:px-8 border-b border-[var(--border)] shrink-0 z-10">
+            <div className="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-[var(--border)] shrink-0 z-10">
                 <div className="flex items-center gap-3">
                     <Users className="text-[var(--text-muted)]" size={18} />
                     <div>
@@ -47,6 +49,10 @@ export default function ContactsPage() {
                         </p>
                     </div>
                 </div>
+                <button onClick={() => setShowCreateGroup(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-[12px] font-semibold hover:brightness-110 transition-all shadow-lg shadow-violet-600/20 active:scale-95">
+                    <Plus size={14} /> New Group
+                </button>
             </div>
 
             {/* Search */}
@@ -133,6 +139,16 @@ export default function ContactsPage() {
             </div>
 
             <MobileNav />
+
+            {showCreateGroup && (
+                <CreateGroupModal
+                    onClose={() => setShowCreateGroup(false)}
+                    onCreated={() => {
+                        setShowCreateGroup(false);
+                        router.push("/chat");
+                    }}
+                />
+            )}
         </div>
     );
 }

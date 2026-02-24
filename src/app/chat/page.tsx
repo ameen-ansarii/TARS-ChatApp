@@ -165,8 +165,8 @@ export default function ChatApp() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setShowCreateGroup(true)} className="w-8 h-8 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[var(--text-muted)] hover:text-violet-400 transition-all border border-[var(--border)]" title="Create Group">
-              <Users size={14} />
+            <button onClick={() => setShowCreateGroup(true)} className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 hover:brightness-110 flex items-center justify-center text-white transition-all shadow-lg shadow-violet-600/20 active:scale-95" title="New Group">
+              <Plus size={15} />
             </button>
             <Link href="/profile" className="w-8 h-8 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-all border border-[var(--border)]">
               <User size={14} />
@@ -232,6 +232,28 @@ export default function ChatApp() {
                   <div className="text-left min-w-0">
                     <p className="text-sm font-medium truncate group-hover:text-[var(--text-primary)] transition-colors">{u.name}</p>
                     <p className="text-[11px] text-[var(--text-muted)] truncate font-light">@{u.username}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Group search results */}
+          {searchQuery && filteredConversations && filteredConversations.filter((c: any) => c.isGroup).length > 0 && (
+            <div className="px-2.5 pt-2">
+              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.15em] mb-1.5 px-1.5 font-medium">Groups</p>
+              {filteredConversations.filter((c: any) => c.isGroup).map((conv: any) => (
+                <button
+                  key={conv._id}
+                  onClick={() => { handleGroupSelect(conv); setSearchQuery(""); }}
+                  className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-white/[0.03] transition-all duration-200 group"
+                >
+                  <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 border border-violet-500/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {conv.groupName?.charAt(0)?.toUpperCase() || "G"}
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="text-sm font-medium truncate group-hover:text-[var(--text-primary)] transition-colors">{conv.groupName}</p>
+                    <p className="text-[11px] text-[var(--text-muted)] truncate font-light">{conv.memberCount} members</p>
                   </div>
                 </button>
               ))}
@@ -365,9 +387,20 @@ function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => voi
   const [activeMenuMessageId, setActiveMenuMessageId] = useState<string | null>(null);
   const [reactionMenuMessageId, setReactionMenuMessageId] = useState<string | null>(null);
   const [replyingToMessage, setReplyingToMessage] = useState<{ id: string, text: string, senderName: string } | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  const scrollToMessage = (messageId: string) => {
+    const el = messageRefs.current.get(messageId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setHighlightedMessageId(messageId);
+      setTimeout(() => setHighlightedMessageId(null), 1500);
+    }
+  };
 
   const currentUser = useQuery(api.users.getCurrentUser);
   const conversation = useQuery(api.conversations.getConversation, currentUser ? { userId: activeUser._id } : "skip");
@@ -519,7 +552,7 @@ function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => voi
               const showTime = i === 0 || m._creationTime - messages[i - 1]._creationTime > 300000;
               const nextIsMe = messages[i + 1]?.isMe === m.isMe;
               return (
-                <div key={m._id} className="w-full">
+                <div key={m._id} ref={(el) => { if (el) messageRefs.current.set(m._id, el); }} className={`w-full transition-all duration-500 ${highlightedMessageId === m._id ? "ring-1 ring-violet-500/50 rounded-2xl bg-violet-500/5" : ""}`}>
                   {showTime && (
                     <div className="flex justify-center my-6">
                       <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold bg-white/5 border border-white/5 px-4 py-1.5 rounded-full shadow-[inset_0_0_10px_rgba(255,255,255,0.02)] backdrop-blur-md">
@@ -547,7 +580,7 @@ function ChatWindow({ activeUser, onBack }: { activeUser: any; onBack: () => voi
                         ) : (
                           <div className="flex flex-col">
                             {m.replyToMessage && (
-                              <div className={`mb-2.5 rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110 ${m.isMe
+                              <div onClick={(e) => { e.stopPropagation(); scrollToMessage(m.replyToMessage._id); }} className={`mb-2.5 rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110 ${m.isMe
                                 ? "bg-white/10 backdrop-blur-sm"
                                 : "bg-white/[0.06] backdrop-blur-sm"
                                 }`}>

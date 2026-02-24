@@ -257,6 +257,105 @@ export const removeMember = mutation({
     },
 });
 
+export const leaveGroup = mutation({
+    args: {
+        conversationId: v.id("conversations"),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const currentUser = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique();
+        if (!currentUser) throw new Error("User not found");
+
+        const conv = await ctx.db.get(args.conversationId);
+        if (!conv || !conv.isGroup) throw new Error("Not a group");
+
+        const members = conv.members || [];
+        if (!members.includes(currentUser._id)) throw new Error("Not a member");
+
+        const newMembers = members.filter(id => id !== currentUser._id);
+
+        // System message
+        const msgId = await ctx.db.insert("messages", {
+            conversationId: args.conversationId,
+            senderId: currentUser._id,
+            text: `${currentUser.name} left the group`,
+            isRead: false,
+            isSystem: true,
+        });
+
+        // If admin leaves, transfer to next member
+        const updates: any = {
+            members: newMembers,
+            updatedAt: Date.now(),
+            lastMessageId: msgId,
+        };
+        if (conv.groupAdmin === currentUser._id && newMembers.length > 0) {
+            updates.groupAdmin = newMembers[0];
+        }
+
+        await ctx.db.patch(args.conversationId, updates);
+
+        // If no members left, delete the conversation
+        if (newMembers.length === 0) {
+            const messages = await ctx.db
+                .query("messages")
+                .withIndex("by_conversationId", (q) => q.eq("conversationId", args.conversationId))
+                .collect();
+            for (const m of messages) await ctx.db.delete(m._id);
+
+            const indicators = await ctx.db
+                .query("typingIndicators")
+                .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+                .collect();
+            for (const t of indicators) await ctx.db.delete(t._id);
+
+            await ctx.db.delete(args.conversationId);
+        }
+    },
+});
+
+export const deleteGroup = mutation({
+    args: {
+        conversationId: v.id("conversations"),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const currentUser = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique();
+        if (!currentUser) throw new Error("User not found");
+
+        const conv = await ctx.db.get(args.conversationId);
+        if (!conv || !conv.isGroup) throw new Error("Not a group");
+        if (conv.groupAdmin !== currentUser._id) throw new Error("Only admin can delete group");
+
+        // Delete all messages
+        const messages = await ctx.db
+            .query("messages")
+            .withIndex("by_conversationId", (q) => q.eq("conversationId", args.conversationId))
+            .collect();
+        for (const m of messages) await ctx.db.delete(m._id);
+
+        // Delete typing indicators
+        const indicators = await ctx.db
+            .query("typingIndicators")
+            .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+            .collect();
+        for (const t of indicators) await ctx.db.delete(t._id);
+
+        // Delete conversation
+        await ctx.db.delete(args.conversationId);
+    },
+});
+
 export const listConversations = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();

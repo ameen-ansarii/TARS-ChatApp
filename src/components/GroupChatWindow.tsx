@@ -33,8 +33,19 @@ export default function GroupChatWindow({ groupConv, onBack }: { groupConv: any;
     const [reactionMenuMessageId, setReactionMenuMessageId] = useState<string | null>(null);
     const [replyingToMessage, setReplyingToMessage] = useState<{ id: string; text: string; senderName: string } | null>(null);
     const [showInfo, setShowInfo] = useState(false);
+    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+    const scrollToMessage = (messageId: string) => {
+        const el = messageRefs.current.get(messageId);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            setHighlightedMessageId(messageId);
+            setTimeout(() => setHighlightedMessageId(null), 1500);
+        }
+    };
 
     const currentUser = useQuery(api.users.getCurrentUser);
     const conversationId = groupConv._id;
@@ -151,7 +162,7 @@ export default function GroupChatWindow({ groupConv, onBack }: { groupConv: any;
                             }
 
                             return (
-                                <div key={m._id} className="w-full">
+                                <div key={m._id} ref={(el) => { if (el) messageRefs.current.set(m._id, el); }} className={`w-full transition-all duration-500 ${highlightedMessageId === m._id ? "ring-1 ring-violet-500/50 rounded-2xl bg-violet-500/5" : ""}`}>
                                     {showTime && (
                                         <div className="flex justify-center my-6">
                                             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold bg-white/5 border border-white/5 px-4 py-1.5 rounded-full backdrop-blur-md">
@@ -189,7 +200,7 @@ export default function GroupChatWindow({ groupConv, onBack }: { groupConv: any;
                                                             <span className={`text-[11px] font-bold mb-1 ${senderColor}`}>{m.senderName}</span>
                                                         )}
                                                         {m.replyToMessage && (
-                                                            <div className={`mb-2.5 rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110 ${m.isMe ? "bg-white/10 backdrop-blur-sm" : "bg-white/[0.06] backdrop-blur-sm"}`}>
+                                                            <div onClick={(e) => { e.stopPropagation(); scrollToMessage(m.replyToMessage._id); }} className={`mb-2.5 rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110 ${m.isMe ? "bg-white/10 backdrop-blur-sm" : "bg-white/[0.06] backdrop-blur-sm"}`}>
                                                                 <div className="flex">
                                                                     <div className={`w-1 shrink-0 rounded-l-xl ${m.isMe ? "bg-gradient-to-b from-white/60 to-white/20" : "bg-gradient-to-b from-blue-400 to-blue-600"}`} />
                                                                     <div className="flex flex-col gap-0.5 px-3 py-2 min-w-0">
@@ -339,7 +350,7 @@ export default function GroupChatWindow({ groupConv, onBack }: { groupConv: any;
 
             {/* Group Info Panel — fixed overlay */}
             {showInfo && (
-                <GroupInfoPanel conversationId={groupConv._id} onClose={() => setShowInfo(false)} />
+                <GroupInfoPanel conversationId={groupConv._id} onClose={() => setShowInfo(false)} onLeft={onBack} />
             )}
         </div>
     );
