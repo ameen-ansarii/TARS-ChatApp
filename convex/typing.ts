@@ -65,6 +65,18 @@ export const getTypingUsers = query({
             .collect();
 
         // Only return if they updated within the last 5 seconds to prevent stuck indicators
-        return activeTyping.filter(t => Date.now() - t.updatedAt < 5000);
+        const recent = activeTyping.filter(t => Date.now() - t.updatedAt < 5000);
+
+        // Hydrate with user data
+        return await Promise.all(
+            recent.map(async (t) => {
+                const user = await ctx.db.get(t.userId);
+                return {
+                    ...t,
+                    userName: user?.name?.split(" ")[0] || "Someone",
+                    userImage: user?.imageUrl,
+                };
+            })
+        );
     },
 });

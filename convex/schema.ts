@@ -16,8 +16,16 @@ export default defineSchema({
     .index("by_username", ["username"]),
 
   conversations: defineTable({
-    participant1: v.id("users"),
-    participant2: v.id("users"),
+    // DM fields (1:1)
+    participant1: v.optional(v.id("users")),
+    participant2: v.optional(v.id("users")),
+    // Group fields
+    isGroup: v.optional(v.boolean()),
+    groupName: v.optional(v.string()),
+    groupDescription: v.optional(v.string()),
+    groupAdmin: v.optional(v.id("users")),
+    members: v.optional(v.array(v.id("users"))),
+    // Shared
     lastMessageId: v.optional(v.id("messages")),
     updatedAt: v.number(),
   })
@@ -29,6 +37,18 @@ export default defineSchema({
     senderId: v.id("users"),
     text: v.string(),
     isRead: v.boolean(),
+    isDeleted: v.optional(v.boolean()),
+    isEdited: v.optional(v.boolean()),
+    isSystem: v.optional(v.boolean()),
+    replyTo: v.optional(v.id("messages")),
+    reactions: v.optional(
+      v.array(
+        v.object({
+          emoji: v.string(),
+          userId: v.id("users"),
+        })
+      )
+    ),
   })
     .index("by_conversationId", ["conversationId"]),
 
