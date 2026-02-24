@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { X, Users, Search, Check, ArrowRight, Sparkles } from "lucide-react";
+import { X, Users, Search, Check, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 export default function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreated: (convId: string) => void }) {
     const [step, setStep] = useState<1 | 2>(1);
     const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
     const [groupName, setGroupName] = useState("");
+    const [groupDescription, setGroupDescription] = useState("");
     const [search, setSearch] = useState("");
     const [creating, setCreating] = useState(false);
 
@@ -35,6 +36,7 @@ export default function CreateGroupModal({ onClose, onCreated }: { onClose: () =
         try {
             const convId = await createGroup({
                 name: groupName.trim(),
+                description: groupDescription.trim() || undefined,
                 memberIds: selectedUsers.map(u => u._id),
             });
             onCreated(convId);
@@ -134,15 +136,11 @@ export default function CreateGroupModal({ onClose, onCreated }: { onClose: () =
                 ) : (
                     <>
                         {/* Step 2: Name the group */}
-                        <div className="flex-1 flex flex-col items-center justify-center px-8 py-10 gap-6">
-                            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500/20 to-indigo-600/20 border border-violet-500/20 flex items-center justify-center">
-                                <Sparkles size={32} className="text-violet-400" />
-                            </div>
-
+                        <div className="flex-1 flex flex-col items-center px-6 py-6 gap-4">
                             <div className="text-center">
-                                <p className="text-white font-bold text-lg mb-1">Name your group</p>
+                                <p className="text-white font-bold text-base mb-0.5">Name your group</p>
                                 <p className="text-gray-500 text-xs">
-                                    {selectedUsers.length} members · You can always change this later
+                                    {selectedUsers.length} members · You can change this later
                                 </p>
                             </div>
 
@@ -150,23 +148,35 @@ export default function CreateGroupModal({ onClose, onCreated }: { onClose: () =
                                 type="text"
                                 value={groupName}
                                 onChange={e => setGroupName(e.target.value)}
-                                placeholder="Enter group name..."
+                                placeholder="Group name..."
                                 autoFocus
                                 maxLength={50}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-center text-white text-base font-semibold placeholder-gray-500 outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-semibold placeholder-gray-500 outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                            />
+
+                            <textarea
+                                value={groupDescription}
+                                onChange={e => setGroupDescription(e.target.value)}
+                                placeholder="What's this group about? (optional)"
+                                maxLength={200}
+                                rows={2}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-500 outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all resize-none"
                             />
 
                             {/* Member avatars preview */}
-                            <div className="flex -space-x-2">
-                                {selectedUsers.slice(0, 5).map(u => (
-                                    <Image key={u._id} src={u.imageUrl} width={32} height={32}
-                                        className="w-8 h-8 rounded-full object-cover border-2 border-[#111]" alt="" />
-                                ))}
-                                {selectedUsers.length > 5 && (
-                                    <div className="w-8 h-8 rounded-full bg-white/10 border-2 border-[#111] flex items-center justify-center text-[10px] text-white font-bold">
-                                        +{selectedUsers.length - 5}
-                                    </div>
-                                )}
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="flex -space-x-1.5">
+                                    {selectedUsers.slice(0, 5).map(u => (
+                                        <Image key={u._id} src={u.imageUrl} width={28} height={28}
+                                            className="w-7 h-7 rounded-full object-cover border-2 border-[#111]" alt="" />
+                                    ))}
+                                    {selectedUsers.length > 5 && (
+                                        <div className="w-7 h-7 rounded-full bg-white/10 border-2 border-[#111] flex items-center justify-center text-[9px] text-white font-bold">
+                                            +{selectedUsers.length - 5}
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="text-[11px] text-gray-500">{selectedUsers.map(u => u.name?.split(" ")[0]).join(", ")}</span>
                             </div>
                         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import { MessageSquareText, Users, LogOut, Loader2, Settings } from "lucide-react";
+import { MessageSquareText, Users, LogOut, Loader2, Settings, User } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -22,7 +22,7 @@ const NavItem = ({ icon: Icon, label, isActive, onClick }: { icon: any, label: s
             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] h-5 bg-[var(--accent)] rounded-r-full" />
         )}
         <Icon size={20} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-[var(--accent)]' : ''} />
-        <span className={`text-[13px] hidden lg:block ${isActive ? 'font-medium' : 'font-normal'}`}>{label}</span>
+        <span className={`text-[14px] hidden lg:block ${isActive ? 'font-semibold' : 'font-normal'}`}>{label}</span>
     </button>
 );
 
@@ -60,6 +60,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex-1 w-full px-2.5 py-3 space-y-1">
                     <NavItem icon={MessageSquareText} label="Messages" isActive={pathname === "/chat"} onClick={() => router.push("/chat")} />
                     <NavItem icon={Users} label="Contacts" isActive={pathname === "/chat/contacts"} onClick={() => router.push("/chat/contacts")} />
+                    <NavItem icon={User} label="Profile" isActive={pathname === "/profile"} onClick={() => router.push("/profile")} />
                 </div>
 
                 {/* User Card */}

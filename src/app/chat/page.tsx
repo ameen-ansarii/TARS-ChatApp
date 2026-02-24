@@ -5,8 +5,8 @@ import { api } from "../../../convex/_generated/api";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect, useRef } from "react";
 import { format, isToday, isYesterday } from "date-fns";
-import Link from "next/link";
-import { User, MessageCircle, Search, ArrowLeft, Send, MoreHorizontal, Edit2, Trash2, X, Smile, Reply, Users, Plus } from "lucide-react";
+
+import { MessageCircle, Search, ArrowLeft, Send, MoreHorizontal, Edit2, Trash2, X, Smile, Reply, Users, Plus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MobileNav from "../../components/MobileNav";
@@ -160,18 +160,13 @@ export default function ChatApp() {
               <div className="absolute -bottom-0.5 -right-0.5 online-dot-sm" />
             </div>
             <div>
-              <p className="text-sm font-medium leading-tight">{currentUser?.name || user.fullName || "User"}</p>
-              <p className="text-[11px] text-[var(--text-muted)] font-light">@{currentUser?.username || user.username || user.firstName?.toLowerCase() || "user"}</p>
+              <p className="text-[14px] font-semibold leading-tight">{currentUser?.name || user.fullName || "User"}</p>
+              <p className="text-[12px] text-[var(--text-muted)]">@{currentUser?.username || user.username || user.firstName?.toLowerCase() || "user"}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => setShowCreateGroup(true)} className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 hover:brightness-110 flex items-center justify-center text-white transition-all shadow-lg shadow-violet-600/20 active:scale-95" title="New Group">
-              <Plus size={15} />
-            </button>
-            <Link href="/profile" className="w-8 h-8 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-all border border-[var(--border)]">
-              <User size={14} />
-            </Link>
-          </div>
+          <button onClick={() => setShowCreateGroup(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 hover:brightness-110 text-white text-[11px] font-semibold transition-all shadow-lg shadow-violet-600/20 active:scale-95" title="New Group">
+            <Plus size={13} /> New Group
+          </button>
         </div>
 
         {/* Search */}
@@ -305,15 +300,15 @@ export default function ChatApp() {
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-[13px] font-medium truncate">
+                          <p className="text-[14px] font-semibold truncate">
                             {isGroup ? conv.groupName : conv.partner?.name}
                           </p>
                           {conv.lastMessage && (
-                            <span className="text-[10px] text-[var(--text-muted)] shrink-0 ml-2 font-light">{formatTimestamp(conv.lastMessage._creationTime)}</span>
+                            <span className="text-[11px] text-[var(--text-muted)] shrink-0 ml-2">{formatTimestamp(conv.lastMessage._creationTime)}</span>
                           )}
                         </div>
                         <div className="flex items-center justify-between gap-2">
-                          <p className={`text-[12px] truncate font-light ${conv.unreadCount > 0 ? "text-[var(--text-secondary)]" : "text-[var(--text-muted)]"}`}>
+                          <p className={`text-[12.5px] truncate ${conv.unreadCount > 0 ? "text-[var(--text-secondary)] font-medium" : "text-[var(--text-muted)]"}`}>
                             {isGroup && conv.memberCount && !conv.lastMessage && (
                               <span>{conv.memberCount} members</span>
                             )}
